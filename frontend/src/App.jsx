@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import "./App.css";
 import BlackScholesPanel from "./BlackScholesPanel";
+import ImpliedVolatilityPanel from "./ImpliedVolatilityPanel";
 
 const API_BASE_URL = "http://127.0.0.1:8000";
 
@@ -838,6 +839,7 @@ const topSignals = useMemo(() => {
         )}
       </section>
 <BlackScholesPanel />
+<ImpliedVolatilityPanel />
       <section className="grid lower-grid">
         <div className="panel">
           <p className="panel-kicker">MARKET DIAGNOSTICS</p>

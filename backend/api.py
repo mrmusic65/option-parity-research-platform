@@ -19,15 +19,18 @@ from research import (
     signal_persistence_score,
     save_scan_snapshot,
 )
-from option_math import black_scholes_price_and_greeks
+from option_math import (
+    black_scholes_price_and_greeks,
+    implied_volatility_bisection,
+)
 
 
 app = FastAPI(
     title="Options Relative Value API",
-    version="0.2.0",
+    version="0.3.0",
     description=(
         "Backend API for put-call parity, synthetic forward pricing, "
-        "signal research, Black-Scholes pricing, and Greeks."
+        "signal research, Black-Scholes pricing, Greeks, and implied volatility."
     ),
 )
 
@@ -71,6 +74,20 @@ class BlackScholesRequest(BaseModel):
     volatility: float = 0.20
 
 
+class ImpliedVolatilityRequest(BaseModel):
+    option_type: str = "call"
+    market_price: float = 10.450584
+    spot: float = 100.0
+    strike: float = 100.0
+    time_to_expiry: float = 1.0
+    risk_free_rate: float = 0.05
+    dividend_yield: float = 0.0
+    min_vol: float = 0.0001
+    max_vol: float = 5.0
+    tolerance: float = 0.000001
+    max_iterations: int = 100
+
+
 def dataframe_to_records(df: pd.DataFrame) -> list[dict[str, Any]]:
     if df.empty:
         return []
@@ -103,6 +120,7 @@ def health():
             "research",
             "black-scholes",
             "greeks",
+            "implied-volatility",
         ],
     }
 
@@ -249,6 +267,25 @@ def black_scholes_endpoint(request: BlackScholesRequest):
         risk_free_rate=request.risk_free_rate,
         dividend_yield=request.dividend_yield,
         volatility=request.volatility,
+    )
+
+    return result.__dict__
+
+
+@app.post("/implied-volatility")
+def implied_volatility_endpoint(request: ImpliedVolatilityRequest):
+    result = implied_volatility_bisection(
+        option_type=request.option_type,
+        market_price=request.market_price,
+        spot=request.spot,
+        strike=request.strike,
+        time_to_expiry=request.time_to_expiry,
+        risk_free_rate=request.risk_free_rate,
+        dividend_yield=request.dividend_yield,
+        min_vol=request.min_vol,
+        max_vol=request.max_vol,
+        tolerance=request.tolerance,
+        max_iterations=request.max_iterations,
     )
 
     return result.__dict__

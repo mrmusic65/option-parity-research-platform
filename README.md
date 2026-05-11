@@ -525,7 +525,7 @@ The goal is to demonstrate quantitative research thinking, derivatives knowledge
 
 ---
 
-## Suggested CV Description
+## CV Description
 
 Developed a full-stack options research platform with Python, FastAPI and React for execution-aware put-call parity analysis, synthetic forward pricing, Black-Scholes pricing, Greeks, trade diagnostics, and signal persistence using real option-chain data.
 

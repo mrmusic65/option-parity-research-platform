@@ -8,9 +8,11 @@ import {
   Loader2,
   Search,
   ShieldCheck,
+  SlidersHorizontal,
   Zap,
 } from "lucide-react";
 import "./App.css";
+import BlackScholesPanel from "./BlackScholesPanel";
 
 const API_BASE_URL = "http://127.0.0.1:8000";
 
@@ -24,6 +26,20 @@ const defaultSummary = {
   max_edge: 0,
   avg_confidence: 0,
   avg_liquidity: 0,
+};
+
+const defaultFilters = {
+  risk_free_rate: 0.05,
+  dividend_yield: 0.005,
+  stock_slippage_bps: 2.0,
+  min_net_edge: 0.05,
+  max_total_spread: 1.0,
+  min_open_interest: 500,
+  min_liquidity_score: 50,
+  min_edge_to_spread: 0.5,
+  min_total_spread_floor: 0.05,
+  max_moneyness_deviation: 0.2,
+  min_option_bid: 0.01,
 };
 
 function formatNumber(value, decimals = 2) {
@@ -53,6 +69,8 @@ function safeValue(value) {
 
 function App() {
   const [tickersInput, setTickersInput] = useState("AAPL, MSFT");
+  const [filters, setFilters] = useState(defaultFilters);
+
   const [scanData, setScanData] = useState({
     summary: defaultSummary,
     rows: [],
@@ -77,19 +95,28 @@ function App() {
       .filter(Boolean);
   }, [tickersInput]);
 
-  const topSignals = useMemo(() => {
-    return scanData.rows
-      .filter((row) =>
-        ["Research candidate", "Watchlist"].includes(row.signal)
-      )
-      .slice(0, 12);
-  }, [scanData.rows]);
+const topSignals = useMemo(() => {
+  return scanData.rows.slice(0, 12);
+}, [scanData.rows]);
 
   const diagnosticRows = useMemo(() => {
-    return scanData.rows.slice(0, 20);
+    return scanData.rows.slice(0, 12);
   }, [scanData.rows]);
 
+  function updateFilter(key, value) {
+    setFilters((previous) => ({
+      ...previous,
+      [key]: value,
+    }));
+  }
+
+  function resetFilters() {
+    setFilters(defaultFilters);
+  }
+
   async function runScan({ saveSnapshot = false } = {}) {
+    alert("Run Scan clicked");
+
     setIsLoading(true);
     setLastScanStatus("RUNNING");
     setSelectedTrade(null);
@@ -104,17 +131,17 @@ function App() {
           tickers,
           scan_mode: "single",
           max_expiries_per_ticker: 1,
-          risk_free_rate: 0.05,
-          dividend_yield: 0.005,
-          stock_slippage_bps: 2.0,
-          min_net_edge: 0.05,
-          max_total_spread: 1.0,
-          min_open_interest: 500,
-          min_liquidity_score: 50,
-          min_edge_to_spread: 0.5,
-          min_total_spread_floor: 0.05,
-          max_moneyness_deviation: 0.2,
-          min_option_bid: 0.01,
+          risk_free_rate: Number(filters.risk_free_rate),
+          dividend_yield: Number(filters.dividend_yield),
+          stock_slippage_bps: Number(filters.stock_slippage_bps),
+          min_net_edge: Number(filters.min_net_edge),
+          max_total_spread: Number(filters.max_total_spread),
+          min_open_interest: Number(filters.min_open_interest),
+          min_liquidity_score: Number(filters.min_liquidity_score),
+          min_edge_to_spread: Number(filters.min_edge_to_spread),
+          min_total_spread_floor: Number(filters.min_total_spread_floor),
+          max_moneyness_deviation: Number(filters.max_moneyness_deviation),
+          min_option_bid: Number(filters.min_option_bid),
           save_snapshot: saveSnapshot,
         }),
       });
@@ -254,9 +281,12 @@ function App() {
       </section>
 
       <section className="control-panel">
-        <div>
-          <p className="panel-kicker">SCAN COMMAND</p>
-          <h2>Live Universe</h2>
+        <div className="panel-header">
+          <div>
+            <p className="panel-kicker">SCAN COMMAND</p>
+            <h2>Live Universe</h2>
+          </div>
+          <SlidersHorizontal size={22} />
         </div>
 
         <div className="input-row">
@@ -281,6 +311,125 @@ function App() {
           </button>
         </div>
 
+        <div className="advanced-controls">
+          <div className="control-title">
+            <span>Research Controls</span>
+            <button className="secondary-button" onClick={resetFilters}>
+              Reset
+            </button>
+          </div>
+
+          <div className="filter-grid">
+            <label>
+              Risk-free rate
+              <input
+                type="number"
+                step="0.005"
+                value={filters.risk_free_rate}
+                onChange={(event) =>
+                  updateFilter("risk_free_rate", event.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              Dividend yield
+              <input
+                type="number"
+                step="0.001"
+                value={filters.dividend_yield}
+                onChange={(event) =>
+                  updateFilter("dividend_yield", event.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              Stock slippage bps
+              <input
+                type="number"
+                step="0.5"
+                value={filters.stock_slippage_bps}
+                onChange={(event) =>
+                  updateFilter("stock_slippage_bps", event.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              Min net edge
+              <input
+                type="number"
+                step="0.01"
+                value={filters.min_net_edge}
+                onChange={(event) =>
+                  updateFilter("min_net_edge", event.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              Max total spread
+              <input
+                type="number"
+                step="0.1"
+                value={filters.max_total_spread}
+                onChange={(event) =>
+                  updateFilter("max_total_spread", event.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              Min open interest
+              <input
+                type="number"
+                step="100"
+                value={filters.min_open_interest}
+                onChange={(event) =>
+                  updateFilter("min_open_interest", event.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              Min liquidity score
+              <input
+                type="number"
+                step="5"
+                value={filters.min_liquidity_score}
+                onChange={(event) =>
+                  updateFilter("min_liquidity_score", event.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              Min edge/spread
+              <input
+                type="number"
+                step="0.1"
+                value={filters.min_edge_to_spread}
+                onChange={(event) =>
+                  updateFilter("min_edge_to_spread", event.target.value)
+                }
+              />
+            </label>
+
+            <label>
+              Max moneyness deviation
+              <input
+                type="number"
+                step="0.05"
+                value={filters.max_moneyness_deviation}
+                onChange={(event) =>
+                  updateFilter("max_moneyness_deviation", event.target.value)
+                }
+              />
+            </label>
+          </div>
+        </div>
+
         {scanData.errors.length > 0 && (
           <div className="error-box">
             <AlertTriangle size={16} />
@@ -292,7 +441,9 @@ function App() {
           </div>
         )}
       </section>
-
+<div className="empty-state small">
+  DEBUG: rows loaded = {scanData.rows.length}
+</div>
       <section className="grid metrics-grid">
         {metrics.map((item) => {
           const Icon = item.icon;
@@ -327,7 +478,7 @@ function App() {
 
           {topSignals.length === 0 ? (
             <div className="empty-state">
-              Run a scan to populate research and watchlist candidates.
+              Run a scan to populate option-chain diagnostics.
             </div>
           ) : (
             <table>
@@ -686,7 +837,7 @@ function App() {
           </>
         )}
       </section>
-
+<BlackScholesPanel />
       <section className="grid lower-grid">
         <div className="panel">
           <p className="panel-kicker">MARKET DIAGNOSTICS</p>

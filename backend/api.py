@@ -19,12 +19,16 @@ from research import (
     signal_persistence_score,
     save_scan_snapshot,
 )
+from option_math import black_scholes_price_and_greeks
 
 
 app = FastAPI(
     title="Options Relative Value API",
-    version="0.1.0",
-    description="Backend API for put-call parity, synthetic forward pricing, and signal research.",
+    version="0.2.0",
+    description=(
+        "Backend API for put-call parity, synthetic forward pricing, "
+        "signal research, Black-Scholes pricing, and Greeks."
+    ),
 )
 
 app.add_middleware(
@@ -57,6 +61,16 @@ class ScanRequest(BaseModel):
     save_snapshot: bool = False
 
 
+class BlackScholesRequest(BaseModel):
+    option_type: str = "call"
+    spot: float = 100.0
+    strike: float = 100.0
+    time_to_expiry: float = 1.0
+    risk_free_rate: float = 0.05
+    dividend_yield: float = 0.0
+    volatility: float = 0.20
+
+
 def dataframe_to_records(df: pd.DataFrame) -> list[dict[str, Any]]:
     if df.empty:
         return []
@@ -84,6 +98,12 @@ def health():
         "status": "online",
         "engine": "put-call-parity",
         "mode": "research",
+        "modules": [
+            "scanner",
+            "research",
+            "black-scholes",
+            "greeks",
+        ],
     }
 
 
@@ -217,3 +237,18 @@ def research_summary():
         "decay": dataframe_to_records(decay),
         "persistence": dataframe_to_records(persistence),
     }
+
+
+@app.post("/black-scholes")
+def black_scholes_endpoint(request: BlackScholesRequest):
+    result = black_scholes_price_and_greeks(
+        option_type=request.option_type,
+        spot=request.spot,
+        strike=request.strike,
+        time_to_expiry=request.time_to_expiry,
+        risk_free_rate=request.risk_free_rate,
+        dividend_yield=request.dividend_yield,
+        volatility=request.volatility,
+    )
+
+    return result.__dict__

@@ -155,6 +155,13 @@ GET /research/summary
 Loads historical snapshots and returns research analytics such as signal decay and persistence.
 
 How to Run
+### Quick Start on Windows
+
+From the project root:
+
+    .\start-dev.ps1
+
+This starts both the FastAPI backend and the React frontend, then opens the dashboard in the browser.
 1. Clone the repository
 git clone <your-repo-url>
 cd option_parity_scanner

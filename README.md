@@ -1,21 +1,27 @@
-Execution-Aware Options Relative Value Research Platform
+# Execution-Aware Options Relative Value Research Platform
 
 A full-stack options research platform for analyzing put-call parity deviations, synthetic forward pricing, implied financing, execution-aware signal quality, and signal persistence over time.
 
 The system combines a Python quantitative engine, a FastAPI backend, and a React frontend designed as an institutional-style options research terminal.
+
 ## Screenshot
 
-![Dashboard](screenshots/dashboard.png)
-Tech Stack
-Python
-FastAPI
-React
-Vite
-Pandas
-yfinance
-Streamlit prototype
-Local CSV snapshot storage
-Overview
+<p align="center">
+  <img src="screenshots/dashboard.png" alt="Dashboard" width="900">
+</p>
+
+## Tech Stack
+
+- Python
+- FastAPI
+- React
+- Vite
+- Pandas
+- yfinance
+- Streamlit prototype
+- Local CSV snapshot storage
+
+## Overview
 
 This project scans listed option chains across a user-defined equity universe and evaluates potential relative-value dislocations using put-call parity.
 
